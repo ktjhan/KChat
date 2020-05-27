@@ -3,21 +3,19 @@ const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
-
-
 // Get username and room from URL
-const { username, room, newroom } = Qs.parse(location.search, {
+const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true
 });
 
 const socket = io();
 
 // Join chatroom
-socket.emit('joinRoom', { username, room});
+socket.emit('joinRoom', { username, room });
 
 // Get room and users
 socket.on('roomUsers', ({ room, users }) => {
-  outputRoomName(room || newroom);
+  outputRoomName(room);
   outputUsers(users);
 });
 
@@ -29,6 +27,7 @@ socket.on('message', message => {
   // Scroll down
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
+
 
 // Message submit
 chatForm.addEventListener('submit', e => {
@@ -67,3 +66,25 @@ function outputUsers(users) {
     ${users.map(user => `<li>${user.username}</li>`).join('')}
   `;
 }
+
+let messageInput = document.getElementById("msg");
+let typing = document.getElementById("typing");
+
+//isTyping event
+messageInput.addEventListener("keypress", () => {
+  socket.emit("typing", { user: "Someone", message: "is typing..." });
+});
+
+socket.on("notifyTyping", data => {
+  typing.innerText = data.user + " " + data.message;
+  console.log(data.user + data.message);
+});
+
+//stop typing
+messageInput.addEventListener("keyup", () => {
+  socket.emit("stopTyping", "");
+});
+
+socket.on("notifyStopTyping", () => {
+  typing.innerText = "";
+});

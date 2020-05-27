@@ -27,7 +27,7 @@ io.on('connection', socket => {
     socket.join(user.room);
 
     // Welcome current user
-    socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'));
+    socket.emit('message', formatMessage(botName, 'Welcome to KChat!'));
 
     // Broadcast when a user connects
     socket.broadcast
@@ -43,6 +43,18 @@ io.on('connection', socket => {
       users: getRoomUsers(user.room)
     });
   });
+
+io.on('connection', (socket)=>{
+    /*from server side we will emit 'display' event once the user starts typing
+    so that on the client side we can capture this event and display 
+    '<data.user> is typing...' */
+    socket.on('typing', (data)=>{
+      if(data.typing==true)
+         io.emit('display', data)
+      else
+         io.emit('display', data)
+    })
+}) 
 
   // Listen for chatMessage
   socket.on('chatMessage', msg => {
